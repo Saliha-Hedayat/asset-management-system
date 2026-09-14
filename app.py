@@ -3,6 +3,7 @@ import streamlit as st
 import pandas as pd
 from datetime import date
 import re
+import os
 
 
 # =========================================================
@@ -15,6 +16,18 @@ st.set_page_config(
 )
 
 st.title("Asset Management System")
+
+
+# =========================================================
+# DATA FILE SELECTION
+# =========================================================
+
+if os.path.exists("assets.xlsx"):
+    DATA_FILE = "assets.xlsx"
+    DATA_SOURCE = "Real organizational dataset"
+else:
+    DATA_FILE = "assets_sample.xlsx"
+    DATA_SOURCE = "Sample demonstration dataset"
 
 
 # =========================================================
@@ -92,7 +105,7 @@ def column_key(name):
 def load_data():
 
     data = pd.read_excel(
-        "assets.xlsx",
+        DATA_FILE,
         sheet_name="Sheet1"
     )
 
@@ -140,7 +153,9 @@ def load_data():
             "Some expected columns could not be found in the Excel file."
         )
 
-        st.write("Missing columns:")
+        st.write(
+            "Missing columns:"
+        )
 
         for column in missing_columns:
 
@@ -173,7 +188,7 @@ df = load_data()
 def save_data(data):
 
     with pd.ExcelWriter(
-        "assets.xlsx",
+        DATA_FILE,
         engine="openpyxl",
         mode="a",
         if_sheet_exists="replace"
@@ -258,17 +273,14 @@ def safe_number(value):
 # =========================================================
 
 if "edit_mode" not in st.session_state:
-
     st.session_state.edit_mode = False
 
 
 if "edit_index" not in st.session_state:
-
     st.session_state.edit_index = None
 
 
 if "asset_search" not in st.session_state:
-
     st.session_state.asset_search = ""
 
 
@@ -283,6 +295,17 @@ def clear_search():
     st.session_state.edit_mode = False
 
     st.session_state.edit_index = None
+
+
+# =========================================================
+# DATA SOURCE INFO
+# =========================================================
+
+if DATA_FILE == "assets_sample.xlsx":
+
+    st.info(
+        "Demo mode: using fictional sample data from assets_sample.xlsx."
+    )
 
 
 # =========================================================
@@ -562,10 +585,6 @@ if search_value:
             )
 
 
-            # -------------------------------------------------
-            # MAIN INFORMATION
-            # -------------------------------------------------
-
             info1, info2, info3 = st.columns(3)
 
 
@@ -692,15 +711,16 @@ if search_value:
                 )
 
 
-            # -------------------------------------------------
-            # SHOW ALL 24 FIELDS
-            # -------------------------------------------------
+            # =================================================
+            # SHOW ALL DETAILS
+            # =================================================
 
             with st.expander(
                 "Show All Details"
             ):
 
                 detail_data = pd.DataFrame({
+
                     "Field": EXPECTED_COLUMNS,
 
                     "Value": [
@@ -718,10 +738,6 @@ if search_value:
                     hide_index=True
                 )
 
-
-            # -------------------------------------------------
-            # UPDATE BUTTON
-            # -------------------------------------------------
 
             update_col1, update_col2 = st.columns(
                 [1, 5]
@@ -746,7 +762,7 @@ if search_value:
 
 
         # =================================================
-        # GENERAL SEARCH -> TABLE
+        # GENERAL SEARCH
         # =================================================
 
         else:
@@ -1108,10 +1124,6 @@ with st.form(
     col1, col2 = st.columns(2)
 
 
-    # =====================================================
-    # LEFT COLUMN
-    # =====================================================
-
     with col1:
 
         umoja_equipment_number = st.text_input(
@@ -1189,10 +1201,6 @@ with st.form(
         )
 
 
-    # =====================================================
-    # RIGHT COLUMN
-    # =====================================================
-
     with col2:
 
         umoja_notification_number = st.text_input(
@@ -1267,10 +1275,6 @@ with st.form(
         )
 
 
-    # =====================================================
-    # FORM BUTTON
-    # =====================================================
-
     if form_mode == "UPDATE":
 
         submitted = st.form_submit_button(
@@ -1286,7 +1290,7 @@ with st.form(
 
 
 # =========================================================
-# VALIDATION
+# VALIDATION AND SAVE
 # =========================================================
 
 if submitted:
@@ -1351,10 +1355,6 @@ if submitted:
 
 
     else:
-
-        # =================================================
-        # DUPLICATE CHECK
-        # =================================================
 
         serial_clean = (
             serial_number
@@ -1437,10 +1437,6 @@ if submitted:
 
         else:
 
-            # =================================================
-            # ASSET DATA
-            # =================================================
-
             asset_data = {
 
                 "Umoja Equipment Number":
@@ -1518,7 +1514,7 @@ if submitted:
 
 
             # =================================================
-            # UPDATE EXISTING ASSET
+            # UPDATE
             # =================================================
 
             if form_mode == "UPDATE":
@@ -1563,7 +1559,7 @@ if submitted:
 
 
             # =================================================
-            # ADD NEW ASSET
+            # ADD
             # =================================================
 
             else:
